@@ -21,7 +21,7 @@ const ERR_INTERNAL_SERV = 500;
 
 // RegExp
 const MONGO_PATTERN = /^[0-9a-fA-F]{24}$/;
-
+const URI_PATTERN = /(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/i;
 module.exports = {
   KEY_MODE,
   MONGO_MODE,
@@ -35,4 +35,5 @@ module.exports = {
   ERR_CONFLICT,
   ERR_INTERNAL_SERV,
   MONGO_PATTERN,
+  URI_PATTERN,
 };

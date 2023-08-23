@@ -5,7 +5,7 @@ const {
   ERR_CONFLICT,
 } = require('./constants');
 
-const handleErrors = (err, req, res, next) => {
+const handleErrors = (err, req, res) => {
   if (err instanceof GeneralError) {
     return res.status(err.getCode()).json({
       code: res.statusCode,

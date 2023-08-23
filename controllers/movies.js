@@ -44,13 +44,13 @@ const postMovie = async (req, res, next) => {
 
 const getMovies = async (req, res, next) => {
   try {
-    const movies = await Movie.find({});
+    const movies = await Movie.find({ owner: req.user.payload._id });
     if (movies.length === 0) {
       throw new NotFound('Cписок фильмов пуст');
     }
     res
       .status(ST_OK)
-      .send({ ...movies, message: `Список фильмов: ${movies.length}` });
+      .send({ movies, message: `Список ваших фильмов: ${movies.length}` });
   } catch (err) {
     next(err);
   }
@@ -61,16 +61,19 @@ const deleteMovieById = async (req, res, next) => {
     if (!validator.isMongoId(req.params.id)) {
       throw new BadRequest('Формат ID неверный');
     }
-    const movie = await Movie.findByIdAndRemove(req.params.id);
+    const movie = await Movie.findById(req.params.id);
     if (movie == null || !movie) {
       throw new NotFound('Фильма с таким ID не найдена');
     }
     if (!movie.owner.equals(req.user.payload._id)) {
       throw new Forbidden('Удаление чужих фильмов- запрещено.');
     }
+
+    await movie.deleteOne({});
+
     res
       .status(ST_OK)
-      .send({ message: `Фильм "${movie.nameRU}" удален из избранного` });
+      .send({ message: `Фильм ${movie.nameRU} удален из избранного` });
   } catch (err) {
     next(err);
   }

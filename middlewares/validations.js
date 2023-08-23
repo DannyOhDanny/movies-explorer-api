@@ -1,5 +1,5 @@
 const { celebrate, Joi } = require('celebrate');
-const { MONGO_PATTERN } = require('../utils/constants');
+const { MONGO_PATTERN, URI_PATTERN } = require('../utils/constants');
 
 const signinValidation = celebrate({
   body: Joi.object().keys({
@@ -82,21 +82,30 @@ const movieValidation = celebrate({
       'string.empty': 'Поле {#label} не может быть пустым',
       'any.required': 'Поле {#label} обязательное',
     }),
-    image: Joi.string().required().uri().messages({
-      'string.empty': 'Поле {#label} не может быть пустым',
-      'string.uri': 'Поле {#label}: URL должен быть валидным',
-      'any.required': 'Поле {#label} обязательное',
-    }),
-    trailerLink: Joi.string().required().uri().messages({
-      'string.empty': 'Поле {#label} не может быть пустым',
-      'string.uri': 'Поле {#label}: URL должен быть валидным',
-      'any.required': 'Поле {#label} обязательное',
-    }),
-    thumbnail: Joi.string().required().uri().messages({
-      'string.empty': 'Поле {#label} не может быть пустым',
-      'string.uri': 'Поле {#label}: URL должен быть валидным',
-      'any.required': 'Поле {#label} обязательное',
-    }),
+    image: Joi.string().required().pattern(URI_PATTERN).uri()
+      .messages({
+        'string.empty': 'Поле {#label} не может быть пустым',
+        'string.uri': 'Поле {#label}: URL должен быть валидным',
+        'string.pattern.base':
+        'Поле {{#label}}: URL должен быть валидным паттерну',
+        'any.required': 'Поле {#label} обязательное',
+      }),
+    trailerLink: Joi.string().required().pattern(URI_PATTERN).uri()
+      .messages({
+        'string.empty': 'Поле {#label} не может быть пустым',
+        'string.uri': 'Поле {#label}: URL должен быть валидным',
+        'string.pattern.base':
+        'Поле {{#label}}: URL должен быть валидным паттерну',
+        'any.required': 'Поле {#label} обязательное',
+      }),
+    thumbnail: Joi.string().required().pattern(URI_PATTERN).uri()
+      .messages({
+        'string.empty': 'Поле {#label} не может быть пустым',
+        'string.uri': 'Поле {#label}: URL должен быть валидным',
+        'string.pattern.base':
+        'Поле {{#label}}: URL должен быть валидным паттерну',
+        'any.required': 'Поле {#label} обязательное',
+      }),
     movieId: Joi.number().required().messages({
       'number.base': 'Поле {#label} должно содержать только цифры.',
     }),
