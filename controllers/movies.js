@@ -1,7 +1,18 @@
 const validator = require('validator');
 const Movie = require('../models/movie');
-const { ST_OK } = require('../utils/constants');
-const { Forbidden, NotFound, BadRequest } = require('../utils/errors');
+const { Forbidden } = require('../errors/ERR_FORBIDDEN');
+const { BadRequest } = require('../errors/ERR_BAD_REQUEST');
+const { NotFound } = require('../errors/ERR_NOT_FOUND');
+const { Conflict } = require('../errors/ERR_CONFLICT');
+const {
+  ST_OK,
+  TXT_ERR_BAD_MOVIE_DATA,
+  TXT_ERR_ID_DUPLICATE,
+  TXT_ERR_MOVIE_NULL,
+  TXT_ERR_ID_FORMAT_INVALID,
+  TXT_ERR_ID_NULL,
+  TXT_ERR_ID_FORBIDDEN,
+} = require('../utils/constants');
 
 const postMovie = async (req, res, next) => {
   const {
@@ -38,7 +49,15 @@ const postMovie = async (req, res, next) => {
       message: `Фильм '${movie.nameRU}' успешно добавлен в избранное`,
     });
   } catch (err) {
-    next(err);
+    if (err.name === 'ValidationError') {
+      next(new BadRequest([TXT_ERR_BAD_MOVIE_DATA, err.message]));
+    } else if (err.name === 'MongoServerError') {
+      next(new Conflict([TXT_ERR_ID_DUPLICATE, err.message]));
+    } else if (err.code === 11000) {
+      next(new Conflict([TXT_ERR_ID_DUPLICATE, err.message]));
+    } else {
+      next(err);
+    }
   }
 };
 
@@ -46,7 +65,7 @@ const getMovies = async (req, res, next) => {
   try {
     const movies = await Movie.find({ owner: req.user.payload._id });
     if (movies.length === 0) {
-      throw new NotFound('Cписок фильмов пуст');
+      throw new NotFound(TXT_ERR_MOVIE_NULL);
     }
     res
       .status(ST_OK)
@@ -59,14 +78,14 @@ const getMovies = async (req, res, next) => {
 const deleteMovieById = async (req, res, next) => {
   try {
     if (!validator.isMongoId(req.params.id)) {
-      throw new BadRequest('Формат ID неверный');
+      throw new BadRequest(TXT_ERR_ID_FORMAT_INVALID);
     }
     const movie = await Movie.findById(req.params.id);
     if (movie == null || !movie) {
-      throw new NotFound('Фильма с таким ID не найдена');
+      throw new NotFound(TXT_ERR_ID_NULL);
     }
     if (!movie.owner.equals(req.user.payload._id)) {
-      throw new Forbidden('Удаление чужих фильмов- запрещено.');
+      throw new Forbidden(TXT_ERR_ID_FORBIDDEN);
     }
 
     await movie.deleteOne({});
@@ -75,7 +94,11 @@ const deleteMovieById = async (req, res, next) => {
       .status(ST_OK)
       .send({ message: `Фильм ${movie.nameRU} удален из избранного` });
   } catch (err) {
-    next(err);
+    if (err.name === 'CastError') {
+      next(new BadRequest(TXT_ERR_ID_NULL));
+    } else {
+      next(err);
+    }
   }
 };
 

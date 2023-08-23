@@ -36,7 +36,10 @@ app.use(handleErrors); // кастомные ошибки
 // Подключение БД
 mongoose.connect(MONGO_MODE);
 
-// Запуск порта + статус МongoDB
+// Запуск порта
+
+app.listen(PORT_MODE);
+
 // app.listen(PORT_MODE, () => {
 //   console.log(`App is listening to port: ${PORT_MODE}`);
 //   const mongo = mongoose.connection.readyState;
@@ -46,4 +49,3 @@ mongoose.connect(MONGO_MODE);
 //     console.log('Mongo OFF!');
 //   }
 // });
-app.listen(PORT_MODE);

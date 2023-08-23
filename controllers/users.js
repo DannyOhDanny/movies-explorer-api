@@ -1,13 +1,21 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const User = require('../models/user');
-const { KEY_MODE, ST_CREATED, ST_OK } = require('../utils/constants');
+const { Conflict } = require('../errors/ERR_CONFLICT');
+const { BadRequest } = require('../errors/ERR_BAD_REQUEST');
+const { NotFound } = require('../errors/ERR_NOT_FOUND');
+const { Unauthorized } = require('../errors/ERR_UNAUTHORIZED');
 const {
-  GeneralError,
-  BadRequest,
-  Unauthorized,
-  NotFound,
-} = require('../utils/errors');
+  KEY_MODE,
+  ST_CREATED,
+  ST_OK,
+  TXT_ERR_USER_EMAIL_CONFLICT,
+  TXT_ERR_USER_NOT_FOUND,
+  TXT_ERR_SERV,
+  TXT_ERR_NO_CREDENTIALS,
+  TXT_ERR_NO_USER,
+  TXT_ERR_BAD_CREDENTIALS,
+} = require('../utils/constants');
 
 const createUser = async (req, res, next) => {
   const { name, email, password } = req.body;
@@ -25,7 +33,13 @@ const createUser = async (req, res, next) => {
       message: `${user.name}, Вы успешно зарегистрированы.`,
     });
   } catch (err) {
-    next(err);
+    if (err.name === 'ValidationError') {
+      next(new BadRequest(err.message));
+    } else if (err.code === 11000) {
+      next(new Conflict(TXT_ERR_USER_EMAIL_CONFLICT));
+    } else {
+      next(err);
+    }
   }
 };
 
@@ -41,11 +55,20 @@ const updateUser = async (req, res, next) => {
         runValidators: true,
       },
     );
+    if (!user) {
+      throw new NotFound(TXT_ERR_USER_NOT_FOUND);
+    }
     res
       .status(ST_OK)
       .send({ user, message: `${user.name}, Ваши данные обновлены.` });
   } catch (err) {
-    next(err);
+    if (err.name === 'ValidationError') {
+      next(new BadRequest(err.message));
+    } else if (err.code === 11000) {
+      next(new Conflict(TXT_ERR_USER_EMAIL_CONFLICT));
+    } else {
+      next(err);
+    }
   }
 };
 
@@ -53,9 +76,10 @@ const getUser = async (req, res, next) => {
   try {
     const user = await User.findById(req.user.payload._id);
 
-    if (user === null) {
-      throw new NotFound('Cписок пользователей пуст');
+    if (user === null || !user) {
+      throw new NotFound(TXT_ERR_USER_NOT_FOUND);
     }
+
     res.status(ST_OK).send({ user });
   } catch (err) {
     next(err);
@@ -67,24 +91,20 @@ const signin = async (req, res, next) => {
 
   try {
     if (!req.body) {
-      throw new GeneralError('На сервере произошла ошибка');
+      throw new Error(TXT_ERR_SERV);
     }
 
     if (!email || !password) {
-      throw new BadRequest('Не указан логин или пароль');
+      throw new BadRequest(TXT_ERR_NO_CREDENTIALS);
     }
-
-    // if (!name) {
-    //   throw new BadRequest('Не указано имя пользователя');
-    // }
 
     const user = await User.findOne({ email }).select('+password');
     if (!user || user === null) {
-      throw new Unauthorized('Такого пользователя не существует');
+      throw new Unauthorized(TXT_ERR_NO_USER);
     }
     const isValid = await bcrypt.compare(password, user.password);
     if (!isValid) {
-      throw new Unauthorized('Неверный логин или пароль');
+      throw new Unauthorized(TXT_ERR_NO_CREDENTIALS);
     }
 
     const token = jwt.sign({ _id: user._id }, KEY_MODE, {
@@ -111,7 +131,7 @@ const signout = async (req, res) => {
     res.status(ST_OK).send({ message: 'Вы успешно вышли из своего аккаунта' });
   }
   if (!res.cookie) {
-    throw new BadRequest('Неверные данные авторизации');
+    throw new BadRequest(TXT_ERR_BAD_CREDENTIALS);
   }
 };
 
