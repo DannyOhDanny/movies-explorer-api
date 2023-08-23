@@ -18,12 +18,13 @@ const signinValidation = celebrate({
 
 const signupValidation = celebrate({
   body: Joi.object().keys({
-    name: Joi.string().min(2).max(30).required().messages({
-      'string.empty': 'Поле {#label} не может быть пустым',
-      'any.required': 'Поле {#label} обязательное',
-      'string.min': 'Длина {#label} - не менее 2 символов',
-      'string.max': 'Длина {#label} - не более 30 символов',
-    }),
+    name: Joi.string().min(2).max(30).required()
+      .messages({
+        'string.empty': 'Поле {#label} не может быть пустым',
+        'any.required': 'Поле {#label} обязательное',
+        'string.min': 'Длина {#label} - не менее 2 символов',
+        'string.max': 'Длина {#label} - не более 30 символов',
+      }),
     email: Joi.string().required().email().messages({
       'string.empty': 'Поле {#label} не может быть пустым',
       'any.required': 'Поле {#label} обязательное',

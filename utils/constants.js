@@ -1,8 +1,9 @@
-const { NODE_ENV, PORT, MOVIE_DB, SECRET_KEY } = process.env;
+const {
+  NODE_ENV, PORT, MOVIE_DB, SECRET_KEY,
+} = process.env;
 
 // Проверка на моуд
-const MONGO_MODE =
-  NODE_ENV === 'production' ? MOVIE_DB : 'mongodb://127.0.0.1:27017/bitfilmsdb';
+const MONGO_MODE = NODE_ENV === 'production' ? MOVIE_DB : 'mongodb://127.0.0.1:27017/bitfilmsdb';
 const KEY_MODE = NODE_ENV === 'production' ? SECRET_KEY : 'dev-secret';
 const PORT_MODE = NODE_ENV === 'production' ? PORT : 3001;
 
