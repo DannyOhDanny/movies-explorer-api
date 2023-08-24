@@ -8,7 +8,6 @@ const {
   ST_OK,
   TXT_ERR_BAD_MOVIE_DATA,
   TXT_ERR_ID_DUPLICATE,
-  TXT_ERR_MOVIE_NULL,
   TXT_ERR_ID_FORMAT_INVALID,
   TXT_ERR_ID_NULL,
   TXT_ERR_ID_FORBIDDEN,
@@ -53,8 +52,6 @@ const postMovie = async (req, res, next) => {
       next(new BadRequest([TXT_ERR_BAD_MOVIE_DATA, err.message]));
     } else if (err.name === 'MongoServerError') {
       next(new Conflict([TXT_ERR_ID_DUPLICATE, err.message]));
-    } else if (err.code === 11000) {
-      next(new Conflict([TXT_ERR_ID_DUPLICATE, err.message]));
     } else {
       next(err);
     }
@@ -64,9 +61,7 @@ const postMovie = async (req, res, next) => {
 const getMovies = async (req, res, next) => {
   try {
     const movies = await Movie.find({ owner: req.user.payload._id });
-    if (movies.length === 0) {
-      throw new NotFound(TXT_ERR_MOVIE_NULL);
-    }
+
     res
       .status(ST_OK)
       .send({ movies, message: `Список ваших фильмов: ${movies.length}` });
