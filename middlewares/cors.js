@@ -1,7 +1,9 @@
 const allowedCors = [
   'http://localhost:3001',
+  'http://localhost:3000',
   'http://filmexplorer.nomoredomainsicu.ru',
   'https://filmexplorer.nomoredomainsicu.ru',
+  'https://api.nomoreparties.co/beatfilm-movies',
 ];
 
 const corsHandling = (req, res, next) => {

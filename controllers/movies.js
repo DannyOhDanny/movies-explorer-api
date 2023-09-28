@@ -61,10 +61,10 @@ const postMovie = async (req, res, next) => {
 const getMovies = async (req, res, next) => {
   try {
     const movies = await Movie.find({ owner: req.user.payload._id });
-
-    res
-      .status(ST_OK)
-      .send({ movies, message: `Список ваших фильмов: ${movies.length}` });
+    res.status(ST_OK).send({
+      movies,
+      message: `Список сохраненных фильмов: ${movies.length}`,
+    });
   } catch (err) {
     next(err);
   }
@@ -85,9 +85,10 @@ const deleteMovieById = async (req, res, next) => {
 
     await movie.deleteOne({});
 
-    res
-      .status(ST_OK)
-      .send({ message: `Фильм ${movie.nameRU} удален из избранного` });
+    res.status(ST_OK).send({
+      _id: movie._id,
+      message: `Фильм ${movie.nameRU} удален из избранного`,
+    });
   } catch (err) {
     if (err.name === 'CastError') {
       next(new BadRequest(TXT_ERR_ID_NULL));

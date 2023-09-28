@@ -106,8 +106,9 @@ const movieValidation = celebrate({
         'Поле {{#label}}: URL должен быть валидным паттерну',
         'any.required': 'Поле {#label} обязательное',
       }),
-    movieId: Joi.number().required().messages({
+    movieId: Joi.number().messages({
       'number.base': 'Поле {#label} должно содержать только цифры.',
+      'any.required': 'Поле {#label} обязательное',
     }),
     nameRU: Joi.string().required().messages({
       'string.empty': 'Поле {#label} не может быть пустым',
